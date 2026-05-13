@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "740924414077",
+    "project_id": "lumira-android",
+    "storage_bucket": "lumira-android.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:740924414077:android:823d2a995fae311e453914",
+        "android_client_info": {
+          "package_name": "com.example.lumira"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAsSNX3i_JTl87_5xqnn2SklAuIMGy6hAA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
