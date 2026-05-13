@@ -4,7 +4,10 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.lumira.ui.home.HomeScreen
+import com.example.lumira.ui.onboarding.JourneyScreen
 import com.example.lumira.ui.onboarding.NameScreen
+import com.example.lumira.ui.onboarding.NotificationScreen
 import com.example.lumira.ui.onboarding.WelcomeScreen
 import com.example.lumira.ui.onboarding.ZodiacScreen
 
@@ -39,18 +42,20 @@ fun NavGraph() {
                 navController.navigate(Routes.NOTIFICATION)
             })
         }
-//        composable(Routes.NOTIFICATION) {
-//            NotificationScreen(onContinue = { navController.navigate(Routes.JOURNEY) })
-//        }
-//        composable(Routes.JOURNEY) {
-//            JourneyScreen(onContinue = {
-//                navController.navigate(Routes.HOME) {
-//                    popUpTo(Routes.WELCOME) { inclusive = true }
-//                }
-//            })
-//        }
-//        composable(Routes.HOME) {
-//            HomeScreen()
-//        }
+        composable(Routes.NOTIFICATION) {
+            NotificationScreen(onContinue = { hour ->
+                navController.navigate(Routes.JOURNEY)
+            })
+        }
+        composable(Routes.JOURNEY) {
+            JourneyScreen(onContinue = {
+                navController.navigate(Routes.HOME) {
+                    popUpTo(Routes.WELCOME) { inclusive = true }
+                }
+            })
+        }
+        composable(Routes.HOME) {
+            HomeScreen()
+        }
     }
 }

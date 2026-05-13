@@ -116,8 +116,8 @@ fun ZodiacScreen(onContinue: (String) -> Unit) {
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = sign.symbol,
-                            fontSize = 28.sp,
+                            text = sign.symbol + "\uFE0E", // \uFE0E forces text rendering, not emoji
+                            fontSize = 30.sp,
                             color = if (isSelected) primary else textSecondary
                         )
                         Spacer(modifier = Modifier.height(4.dp))

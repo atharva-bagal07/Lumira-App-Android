@@ -56,8 +56,8 @@ val Typography = Typography(
     bodyMedium = TextStyle(
         fontFamily = CormorantGaramond,
         fontWeight = FontWeight.Normal,
-        fontSize = 18.sp,
-        lineHeight = 26.sp,
+        fontSize = 20.sp,
+        lineHeight = 28.sp,
         letterSpacing = 0.sp
     ),
 
