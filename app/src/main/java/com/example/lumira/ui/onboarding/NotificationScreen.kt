@@ -24,11 +24,10 @@ data class NotificationTime(
 )
 
 val notificationTimes = listOf(
-    NotificationTime("Morning", "7:00 AM — start your day aligned", "↑", 7),
-    NotificationTime("Afternoon", "12:00 PM — midday check-in", "◎", 12),
-    NotificationTime("Evening", "8:00 PM — reflect before rest", "↓", 20),
+    NotificationTime("Morning", "First reminder when your day begins", "🌅", 7),
+    NotificationTime("Afternoon", "First reminder at midday", "☀️", 12),
+    NotificationTime("Evening", "First reminder in the evening", "🌙", 20),
 )
-
 @Composable
 fun NotificationScreen(onContinue: (Int) -> Unit) {
     val isDark = isNightTime()
@@ -70,7 +69,7 @@ fun NotificationScreen(onContinue: (Int) -> Unit) {
         Spacer(modifier = Modifier.height(6.dp))
 
         Text(
-            text = "We'll remind you once a day.",
+            text = "We'll nudge you until you've reflected.",
             style = MaterialTheme.typography.bodyMedium,
             color = textSecondary,
             modifier = Modifier.fillMaxWidth()
@@ -99,7 +98,7 @@ fun NotificationScreen(onContinue: (Int) -> Unit) {
                 Text(
                     text = time.emoji,
                     fontSize = 20.sp,
-                    fontFamily = CormorantGaramond,
+                    fontFamily = Almendra,
                     fontWeight = FontWeight.Bold,
                     color = if (isSelected) primary else textSecondary
                 )

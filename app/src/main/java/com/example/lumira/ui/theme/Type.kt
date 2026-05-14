@@ -8,26 +8,25 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.example.lumira.R
 
-val CormorantGaramond = FontFamily(
-    Font(R.font.cormorant_regular, FontWeight.Normal),
-    Font(R.font.cormorant_medium, FontWeight.Medium),
-    Font(R.font.cormorant_semibold, FontWeight.SemiBold),
-    Font(R.font.cormorant_bold, FontWeight.Bold)
+val Almendra = FontFamily(
+    Font(R.font.almendra_regular, FontWeight.Normal),
+    Font(R.font.almendra_bold, FontWeight.Bold)
 )
+
 val Typography = Typography(
 
     // App title — "Lumira" wordmark
     displayLarge = TextStyle(
-        fontFamily = CormorantGaramond,
+        fontFamily = Almendra,
         fontWeight = FontWeight.Bold,
-        fontSize = 72.sp,
-        lineHeight = 80.sp,
-        letterSpacing = 0.sp
+        fontSize = 52.sp,
+        lineHeight = 60.sp,
+        letterSpacing = 2.sp
     ),
 
-    // Screen headings — "What should we call you?"
+    // Screen headings
     headlineMedium = TextStyle(
-        fontFamily = CormorantGaramond,
+        fontFamily = Almendra,
         fontWeight = FontWeight.Bold,
         fontSize = 32.sp,
         lineHeight = 40.sp,
@@ -36,8 +35,8 @@ val Typography = Typography(
 
     // Card titles
     titleMedium = TextStyle(
-        fontFamily = CormorantGaramond,
-        fontWeight = FontWeight.Medium,
+        fontFamily = Almendra,
+        fontWeight = FontWeight.Bold,
         fontSize = 20.sp,
         lineHeight = 28.sp,
         letterSpacing = 0.sp
@@ -45,7 +44,7 @@ val Typography = Typography(
 
     // Guidance card body text
     bodyLarge = TextStyle(
-        fontFamily = CormorantGaramond,
+        fontFamily = Almendra,
         fontWeight = FontWeight.Normal,
         fontSize = 18.sp,
         lineHeight = 28.sp,
@@ -54,14 +53,14 @@ val Typography = Typography(
 
     // Secondary body — subtitles, hints
     bodyMedium = TextStyle(
-        fontFamily = CormorantGaramond,
+        fontFamily = Almendra,
         fontWeight = FontWeight.Normal,
-        fontSize = 20.sp,
-        lineHeight = 28.sp,
+        fontSize = 16.sp,
+        lineHeight = 24.sp,
         letterSpacing = 0.sp
     ),
 
-    // Labels — "TODAY'S GUIDANCE", "AFFIRMATION"
+    // Labels — kept as default for clarity at small sizes
     labelSmall = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Medium,
@@ -70,7 +69,7 @@ val Typography = Typography(
         letterSpacing = 0.08.sp
     ),
 
-    // Buttons, pills — kept as default for clarity
+    // Buttons, pills
     labelMedium = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Medium,

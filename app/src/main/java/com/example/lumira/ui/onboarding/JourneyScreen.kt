@@ -1,9 +1,12 @@
 package com.example.lumira.ui.onboarding
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -16,18 +19,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.lumira.ui.theme.*
 
-data class JourneyStage(
-    val label: String,
+data class Stage(
     val symbol: String,
+    val name: String,
+    val days: String,
+    val description: String,
     val isActive: Boolean
 )
 
-val journeyStages = listOf(
-    JourneyStage("Seed", "◉", true),
-    JourneyStage("Moon", "☽", false),
-    JourneyStage("Star", "✦", false),
-    JourneyStage("Orbit", "◎", false),
-    JourneyStage("Cosmic", "∞", false),
+val stages = listOf(
+    Stage("◉", "Seed", "Day 1–7", "Your journey starts here.", true),
+    Stage("☽", "Moon", "Day 8–21", "A habit begins to form.", false),
+    Stage("☆", "Star", "Day 22–50", "Reflection becomes natural.", false),
+    Stage("◎", "Orbit", "Day 51–100", "Your energy is aligned.", false),
+    Stage("∞", "Cosmic", "Day 101+", "You've found your rhythm.", false),
 )
 
 @Composable
@@ -40,107 +45,97 @@ fun JourneyScreen(onContinue: () -> Unit) {
     val primary = if (isDark) DarkPrimary else LightPrimary
     val primaryDark = if (isDark) DarkPrimaryDark else LightPrimaryDark
     val accentFill = if (isDark) DarkAccentFill else LightAccentFill
+    val accentBorder = if (isDark) DarkAccentBorder else LightAccentBorder
     val border = if (isDark) DarkBorder else LightBorder
+    val surface = if (isDark) DarkSurface else LightSurface
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(bg)
-            .padding(horizontal = 24.dp),
+            .padding(horizontal = 24.dp)
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.height(48.dp))
 
         ProgressDots(total = 5, current = 4, activeColor = primary, inactiveColor = border)
 
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.height(36.dp))
 
         Text(
             text = "Your journey begins.",
             style = MaterialTheme.typography.headlineMedium,
             color = textPrimary,
             fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center
+            modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "Each day you reflect, you grow.\nWatch your path unfold.",
+            text = "Reflect daily to grow through each stage.",
             style = MaterialTheme.typography.bodyMedium,
             color = textSecondary,
-            textAlign = TextAlign.Center
+            modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(48.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
-        // Journey stages row
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            journeyStages.forEachIndexed { index, stage ->
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    // Circle
-                    Box(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(CircleShape)
-                            .background(if (stage.isActive) primary else accentFill),
-                        contentAlignment = Alignment.Center
+        // Stage list
+        stages.forEach { stage ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 12.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(surface)
+                    .border(0.5.dp, border, RoundedCornerShape(14.dp))
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Symbol circle
+                Text(
+                    text = stage.symbol,
+                    fontSize = 28.sp,
+                    color = primary,
+                    modifier = Modifier.width(44.dp),
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.width(14.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
-                            text = stage.symbol,
-                            fontSize = 18.sp,
-                            color = if (stage.isActive) bg else textSecondary
+                            text = stage.name,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = textPrimary,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = stage.days,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = textSecondary,
+                            fontSize = 11.sp
                         )
                     }
-                    Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = stage.label,
-                        fontSize = 11.sp,
-                        color = if (stage.isActive) primary else textSecondary,
-                        fontWeight = if (stage.isActive) FontWeight.Medium else FontWeight.Normal
+                        text = stage.description,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = textSecondary,
+                        fontSize = 14.sp
                     )
-                }
-
-                // Connector line between stages
-                if (index < journeyStages.size - 1) {
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Box(
-                        modifier = Modifier
-                            .width(12.dp)
-                            .height(1.dp)
-                            .background(border)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(40.dp))
-
-        // Info card
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(14.dp))
-                .background(accentFill)
-                .padding(16.dp)
-        ) {
-            Text(
-                text = "Reflect daily to unlock each stage.\nYour streak is your light.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = primary,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.height(24.dp))
 
         LumiraButton(
             text = "See today's guidance",

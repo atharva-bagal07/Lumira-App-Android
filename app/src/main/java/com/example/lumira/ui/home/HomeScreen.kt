@@ -1,11 +1,12 @@
 package com.example.lumira.ui.home
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
@@ -19,9 +20,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.lumira.ui.theme.*
+import com.example.lumira.viewmodel.LumiraViewModel
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun HomeScreen() {
+fun HomeScreen(viewModel: LumiraViewModel) {
     val isDark = isNightTime()
 
     val bg = if (isDark) DarkBackground else LightBackground
@@ -36,11 +39,17 @@ fun HomeScreen() {
 
     var reflected by remember { mutableStateOf(false) }
 
+    val zodiac by viewModel.userZodiac.collectAsState()
+    val streak by viewModel.streak.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.checkAndUpdateStreak()
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(bg)
-            .verticalScroll(rememberScrollState())
             .padding(horizontal = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -54,165 +63,77 @@ fun HomeScreen() {
         ) {
             Column {
                 Text(
-                    text = "Lumira",
-                    style = MaterialTheme.typography.displayLarge,
+                    text = zodiac.ifEmpty { "—" },
+                    style = MaterialTheme.typography.titleMedium,
                     color = textPrimary,
-                    fontSize = 32.sp
+                    fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Wednesday, May 13",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = textSecondary,
-                    fontSize = 14.sp
+                    text = java.time.LocalDate.now()
+                        .format(java.time.format.DateTimeFormatter.ofPattern("EEEE, MMM d")),
+                    fontSize = 13.sp,
+                    color = textSecondary
                 )
             }
+
             // Streak pill
             Row(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(99.dp))
-                    .background(accentFill)
-                    .border(0.5.dp, accentBorder, RoundedCornerShape(99.dp))
-                    .padding(horizontal = 14.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                Text(text = "◉", fontSize = 12.sp, color = primary)
+                Text(text = "🔥", fontSize = 20.sp)
                 Text(
-                    text = "7 days aligned",
+                    text = streak.toString(),
                     style = MaterialTheme.typography.labelMedium,
-                    color = primary
+                    color = primary,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Sign + reading label
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = "Aries · Mar 24",
-                style = MaterialTheme.typography.bodyMedium,
-                color = textSecondary,
-                fontSize = 13.sp
-            )
-            Text(
-                text = "Today's reading",
-                style = MaterialTheme.typography.bodyMedium,
-                color = primary,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Medium
-            )
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.weight(0.5f))
 
         // Guidance card
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp))
+                .clip(RoundedCornerShape(20.dp))
                 .background(surface)
-                .border(0.5.dp, border, RoundedCornerShape(16.dp))
-                .padding(18.dp)
+                .border(0.5.dp, border, RoundedCornerShape(20.dp))
+                .padding(26.dp)
         ) {
             Text(
                 text = "TODAY'S GUIDANCE",
                 style = MaterialTheme.typography.labelSmall,
                 color = textSecondary,
-                letterSpacing = 1.sp
+                letterSpacing = 1.sp,
+                fontSize = 14.sp
             )
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = "Today rewards patience more than speed. If you slow down before reacting, a conversation may turn in your favour.",
                 style = MaterialTheme.typography.bodyLarge,
                 color = textPrimary,
-                lineHeight = 28.sp
+                lineHeight = 36.sp,
+                fontSize = 26.sp
             )
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.weight(0.5f))
 
-        // Affirmation card
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp))
-                .background(accentFill)
-                .border(0.5.dp, accentBorder, RoundedCornerShape(16.dp))
-                .padding(18.dp)
-        ) {
-            Text(
-                text = "AFFIRMATION",
-                style = MaterialTheme.typography.labelSmall,
-                color = primary,
-                letterSpacing = 1.sp
-            )
-            Spacer(modifier = Modifier.height(10.dp))
-            Text(
-                text = "\"I trust myself to respond calmly and clearly.\"",
-                style = MaterialTheme.typography.bodyLarge,
-                color = primary,
-                fontWeight = FontWeight.Medium,
-                lineHeight = 28.sp
-            )
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Energy row
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            listOf(
-                Triple("Career", 4, 5),
-                Triple("Relations", 3, 5),
-                Triple("Focus", 5, 5)
-            ).forEach { (label, score, total) ->
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(surface)
-                        .border(0.5.dp, border, RoundedCornerShape(12.dp))
-                        .padding(10.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = label,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = textSecondary,
-                        fontSize = 11.sp
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
-                        repeat(total) { index ->
-                            Box(
-                                modifier = Modifier
-                                    .size(6.dp)
-                                    .clip(CircleShape)
-                                    .background(if (index < score) primary else border)
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Reflect button
+        // Reflect button or confirmed state
         if (!reflected) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
+                    .clip(RoundedCornerShape(14.dp))
                     .background(primaryDark)
-                    .clickable { reflected = true }
-                    .padding(vertical = 16.dp),
+                    .clickable {
+                        reflected = true
+                        viewModel.markReflected()
+                    }
+                    .padding(vertical = 18.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -222,31 +143,29 @@ fun HomeScreen() {
                 )
             }
         } else {
-            // Post-reflection state
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
+                    .clip(RoundedCornerShape(14.dp))
                     .background(accentFill)
-                    .border(0.5.dp, accentBorder, RoundedCornerShape(12.dp))
-                    .padding(20.dp),
+                    .border(0.5.dp, accentBorder, RoundedCornerShape(14.dp))
+                    .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = "☽", fontSize = 28.sp, color = primary)
-                Spacer(modifier = Modifier.height(8.dp))
+                Text(text = "☽", fontSize = 32.sp, color = primary)
+                Spacer(modifier = Modifier.height(10.dp))
                 Text(
-                    text = "8-day streak",
+                    text = "$streak-day streak",
                     style = MaterialTheme.typography.titleMedium,
                     color = textPrimary,
                     fontWeight = FontWeight.Bold
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(6.dp))
                 Text(
                     text = "Alignment maintained. See you tomorrow.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = textSecondary,
-                    textAlign = TextAlign.Center,
-                    fontSize = 15.sp
+                    textAlign = TextAlign.Center
                 )
             }
         }
