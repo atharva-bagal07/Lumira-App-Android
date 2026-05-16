@@ -15,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -42,8 +43,18 @@ fun HomeScreen(viewModel: LumiraViewModel) {
     val zodiac by viewModel.userZodiac.collectAsState()
     val streak by viewModel.streak.collectAsState()
 
+    val context = LocalContext.current
+
     LaunchedEffect(Unit) {
         viewModel.checkAndUpdateStreak()
+    }
+
+    val dailyGuidance by viewModel.dailyGuidance.collectAsState()
+
+    LaunchedEffect(zodiac) {
+        if (zodiac.isNotEmpty()) {
+            viewModel.fetchDailyGuidance(zodiac)
+        }
     }
 
     Column(
@@ -66,12 +77,13 @@ fun HomeScreen(viewModel: LumiraViewModel) {
                     text = zodiac.ifEmpty { "—" },
                     style = MaterialTheme.typography.titleMedium,
                     color = textPrimary,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp
                 )
                 Text(
                     text = java.time.LocalDate.now()
                         .format(java.time.format.DateTimeFormatter.ofPattern("EEEE, MMM d")),
-                    fontSize = 13.sp,
+                    fontSize = 16.sp,
                     color = textSecondary
                 )
             }
@@ -112,7 +124,7 @@ fun HomeScreen(viewModel: LumiraViewModel) {
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "Today rewards patience more than speed. If you slow down before reacting, a conversation may turn in your favour.",
+                text = dailyGuidance.guidance.ifEmpty { "Loading your guidance..." },
                 style = MaterialTheme.typography.bodyLarge,
                 color = textPrimary,
                 lineHeight = 36.sp,
@@ -132,6 +144,7 @@ fun HomeScreen(viewModel: LumiraViewModel) {
                     .clickable {
                         reflected = true
                         viewModel.markReflected()
+                        viewModel.cancelNotifications(context)
                     }
                     .padding(vertical = 18.dp),
                 contentAlignment = Alignment.Center
@@ -148,25 +161,47 @@ fun HomeScreen(viewModel: LumiraViewModel) {
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
                     .background(accentFill)
-                    .border(0.5.dp, accentBorder, RoundedCornerShape(14.dp))
-                    .padding(24.dp),
+                    .border(1.dp, accentBorder, RoundedCornerShape(14.dp))
+                    .padding(28.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = "☽", fontSize = 32.sp, color = primary)
-                Spacer(modifier = Modifier.height(10.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(text = "🔥", fontSize = 32.sp)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "$streak",
+                        fontSize = 52.sp,
+                        fontFamily = Almendra,
+                        fontWeight = FontWeight.Bold,
+                        color = primary
+                    )
+                }
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "$streak-day streak",
+                    text = "days aligned",
                     style = MaterialTheme.typography.titleMedium,
-                    color = textPrimary,
+                    color = primary,
                     fontWeight = FontWeight.Bold
                 )
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = "Alignment maintained. See you tomorrow.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = textSecondary,
-                    textAlign = TextAlign.Center
-                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(if (isDark) DarkBackground else LightBackground)
+                        .padding(12.dp)
+                ) {
+                    Text(
+                        text = "Alignment maintained. See you tomorrow.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = textSecondary,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
         }
 
