@@ -2,19 +2,21 @@ package com.example.lumira.ui.home
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -22,10 +24,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.lumira.ui.theme.*
 import com.example.lumira.viewmodel.LumiraViewModel
+import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun HomeScreen(viewModel: LumiraViewModel) {
+fun HomeScreen(viewModel: LumiraViewModel, onStartReading: () -> Unit, onViewHistory: () -> Unit) {
     val isDark = isNightTime()
 
     val bg = if (isDark) DarkBackground else LightBackground
@@ -56,6 +59,19 @@ fun HomeScreen(viewModel: LumiraViewModel) {
             viewModel.fetchDailyGuidance(zodiac)
         }
     }
+
+    var animateTrigger by remember { mutableStateOf(false) }
+    val streakScale by animateFloatAsState(
+        targetValue = if (animateTrigger) 1.4f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        finishedListener = { animateTrigger = false },
+        label = "streakScale"
+    )
+
+    val scope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
@@ -91,7 +107,11 @@ fun HomeScreen(viewModel: LumiraViewModel) {
             // Streak pill
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier.graphicsLayer {
+                    scaleX = streakScale
+                    scaleY = streakScale
+                }
             ) {
                 Text(text = "🔥", fontSize = 20.sp)
                 Text(
@@ -142,9 +162,13 @@ fun HomeScreen(viewModel: LumiraViewModel) {
                     .clip(RoundedCornerShape(14.dp))
                     .background(primaryDark)
                     .clickable {
-                        reflected = true
-                        viewModel.markReflected()
-                        viewModel.cancelNotifications(context)
+                        scope.launch {
+                            viewModel.markReflected()
+                            kotlinx.coroutines.delay(300)
+                            reflected = true
+                            animateTrigger = true
+                            viewModel.cancelNotifications(context)
+                        }
                     }
                     .padding(vertical = 18.dp),
                 contentAlignment = Alignment.Center

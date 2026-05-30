@@ -18,18 +18,32 @@ object NotificationScheduler {
 
         val now = LocalDateTime.now()
 
-        val notifTimes = listOf(
-            now.withHour(8).withMinute(Random.nextInt(0, 59)).withSecond(0),
-            now.withHour(14).withMinute(Random.nextInt(0, 59)).withSecond(0),
-            now.withHour(Random.nextInt(18, 19)).withMinute(Random.nextInt(0, 59)).withSecond(0),
-            now.withHour(Random.nextInt(21, 22)).withMinute(Random.nextInt(0, 59)).withSecond(0),
-        )
+        val testTime = if (now.minute + 2 >= 60) {
+            now.toLocalDate().atTime(now.hour + 1, (now.minute + 2) - 60)
+        } else {
+            now.toLocalDate().atTime(now.hour, now.minute + 2)
+        }
+
+        // Each time is built with explicit hour and minute — no overflow possible
+        val notifTimes = listOf(testTime)
 
         notifTimes.forEachIndexed { index, scheduledTime ->
             val notifNumber = index + 1
-            if (scheduledTime.isBefore(now)) return@forEachIndexed
+            if (!scheduledTime.isAfter(now)) {
+                android.util.Log.d(
+                    "LumiraNotif",
+                    "Skipping notif #$notifNumber — time already passed: $scheduledTime"
+                )
+                return@forEachIndexed
+            }
 
             val delayMinutes = now.until(scheduledTime, ChronoUnit.MINUTES)
+            android.util.Log.d(
+                "LumiraNotif",
+                "Scheduling notif #$notifNumber in $delayMinutes minutes at $scheduledTime"
+            )
+
+            // rest of enqueue code
             if (delayMinutes <= 0) return@forEachIndexed
 
             val inputData = workDataOf(

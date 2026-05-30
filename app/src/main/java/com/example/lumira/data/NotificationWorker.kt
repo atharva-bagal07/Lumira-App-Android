@@ -23,13 +23,17 @@ class NotificationWorker(
         val notifNumber = inputData.getInt("notif_number", 1)
         val teaser = inputData.getString("teaser") ?: "Your guidance for today is ready."
 
+        android.util.Log.d("LumiraNotif", "Worker fired — notif #$notifNumber")
+
         val prefs = UserPreferences(context)
         val today = java.time.LocalDate.now()
             .format(java.time.format.DateTimeFormatter.ISO_DATE)
         val lastOpened = prefs.lastOpened.first()
 
-        // Don't send 2nd, 3rd, 4th if already reflected
+        android.util.Log.d("LumiraNotif", "Last opened: $lastOpened, Today: $today")
+
         if (notifNumber > 1 && lastOpened == today) {
+            android.util.Log.d("LumiraNotif", "Skipping — already reflected today")
             return Result.success()
         }
 
