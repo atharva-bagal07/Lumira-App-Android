@@ -12,27 +12,20 @@ class GeminiRepository {
 
     private val apiKey = BuildConfig.GEMINI_API_KEY
     private val endpoint =
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey"
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey"
 
     suspend fun generateReading(
         name: String,
         zodiacSign: String,
-        chineseZodiac: String,
-        lifePathNumber: Int,
-        personalDayNumber: Int,
         lifePhase: String,
-        birthTime: String,
         readingStyle: String,
         areaOfLife: String,
         mood: String,
-        question: String,
-        astrologyContext: String
+        question: String
     ): Result<String> = withContext(Dispatchers.IO) {
         try {
             val prompt = buildPrompt(
-                name, zodiacSign, chineseZodiac, lifePathNumber,
-                personalDayNumber, lifePhase, birthTime, readingStyle,
-                areaOfLife, mood, question, astrologyContext
+                name, zodiacSign, lifePhase, readingStyle, areaOfLife, mood, question
             )
 
             val requestBody = JSONObject().apply {
@@ -46,8 +39,8 @@ class GeminiRepository {
                     })
                 })
                 put("generationConfig", JSONObject().apply {
-                    put("temperature", 0.9)
-                    put("maxOutputTokens", 400)
+                    put("temperature", 0.8)
+                    put("maxOutputTokens", 700)
                 })
             }
 
@@ -85,39 +78,24 @@ class GeminiRepository {
     private fun buildPrompt(
         name: String,
         zodiacSign: String,
-        chineseZodiac: String,
-        lifePathNumber: Int,
-        personalDayNumber: Int,
         lifePhase: String,
-        birthTime: String,
         readingStyle: String,
         areaOfLife: String,
         mood: String,
-        question: String,
-        astrologyContext: String
+        question: String
     ): String {
-        val birthTimeText = if (birthTime.isNotEmpty()) "born at $birthTime" else ""
         return """
-You are a warm, insightful spiritual guide writing a personalised daily reading.
-
-User profile:
-- Name: $name
-- Sun sign: $zodiacSign $birthTimeText
-- Chinese zodiac: $chineseZodiac
-- Life path number: $lifePathNumber
-- Personal day number: $personalDayNumber
-- Life phase: $lifePhase
-
-Today's cosmic energy:
-- $astrologyContext
-
-Reading request:
-- Style: $readingStyle
-- Area of life: $areaOfLife
-- Current mood: $mood
-- Question: $question
-
-Write a warm, personal 180-200 word reading for $name that directly addresses their question about $areaOfLife. Weave in their $zodiacSign energy and today's cosmic context naturally. End with a one sentence affirmation starting with "Affirmation:". Do not use bullet points. Write in flowing paragraphs. Do not mention the user's life path or personal day number directly — let them subtly inform the tone.
-        """.trimIndent()
+Someone is asking for a $readingStyle reading about $areaOfLife. They are feeling $mood today and are currently $lifePhase.
+Their question: "$question"
+Write a helpful, specific answer to this question. Follow these rules strictly:
+- Do NOT mention their name, star sign, or any astrology terms
+- Do NOT start with any greeting or address them by name
+- Answer the question directly in the first sentence
+- Give 3 practical specific suggestions for "$areaOfLife"
+- Each suggestion should be one short paragraph
+- Total length: 170-200 words
+- Tone: honest, warm, like advice from a knowledgeable friend
+- Last line only: Affirmation: [one short sentence in first person]
+    """.trimIndent()
     }
 }

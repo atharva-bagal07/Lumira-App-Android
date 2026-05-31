@@ -34,7 +34,7 @@ fun WelcomeScreen(onContinue: () -> Unit) {
         Spacer(modifier = Modifier.height(48.dp))
 
         // Progress dots
-        ProgressDots(total = 5, current = 0, activeColor = primary, inactiveColor = border)
+        ProgressDots(total = 8, current = 0, activeColor = primary, inactiveColor = border)
 
         Spacer(modifier = Modifier.weight(1f))
 

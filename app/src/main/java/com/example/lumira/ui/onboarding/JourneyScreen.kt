@@ -59,7 +59,7 @@ fun JourneyScreen(onContinue: () -> Unit) {
     ) {
         Spacer(modifier = Modifier.height(48.dp))
 
-        ProgressDots(total = 5, current = 4, activeColor = primary, inactiveColor = border)
+        ProgressDots(total = 8, current = 6, activeColor = primary, inactiveColor = border)
 
         Spacer(modifier = Modifier.height(36.dp))
 

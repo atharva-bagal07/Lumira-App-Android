@@ -14,6 +14,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.lumira.ui.theme.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BirthTimeScreen(onContinue: (String) -> Unit) {
     val isDark = isNightTime()
@@ -109,6 +110,44 @@ fun BirthTimeScreen(onContinue: (String) -> Unit) {
                         )
                     }
                 }
+//                ExposedDropdownMenuBox(
+//                    expanded = hourExpanded,
+//                    onExpandedChange = { hourExpanded = !hourExpanded }
+//                ) {
+//                    Box(
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .menuAnchor()
+//                            .clip(RoundedCornerShape(12.dp))
+//                            .background(surface)
+//                            .border(0.5.dp, if (hourExpanded) primary else border, RoundedCornerShape(12.dp))
+//                            .padding(14.dp)
+//                    ) {
+//                        Text(
+//                            text = selectedHour.toString(),
+//                            style = MaterialTheme.typography.bodyMedium,
+//                            color = textPrimary
+//                        )
+//                    }
+//                    ExposedDropdownMenu(
+//                        expanded = hourExpanded,
+//                        onDismissRequest = { hourExpanded = false },
+//                        modifier = Modifier.background(surface)
+//                    ) {
+//                        hours.forEach { hour ->
+//                            DropdownMenuItem(
+//                                text = {
+//                                    Text(
+//                                        hour.toString(),
+//                                        color = if (hour == selectedHour) primary else textPrimary,
+//                                        style = MaterialTheme.typography.bodyMedium
+//                                    )
+//                                },
+//                                onClick = { selectedHour = hour; hourExpanded = false }
+//                            )
+//                        }
+//                    }
+//                }
             }
 
             Box(modifier = Modifier.weight(1f)) {
@@ -149,6 +188,44 @@ fun BirthTimeScreen(onContinue: (String) -> Unit) {
                         )
                     }
                 }
+//                ExposedDropdownMenuBox(
+//                    expanded = amPmExpanded,
+//                    onExpandedChange = { amPmExpanded = !amPmExpanded }
+//                ) {
+//                    Box(
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .menuAnchor()
+//                            .clip(RoundedCornerShape(12.dp))
+//                            .background(surface)
+//                            .border(0.5.dp, if (amPmExpanded) primary else border, RoundedCornerShape(12.dp))
+//                            .padding(14.dp)
+//                    ) {
+//                        Text(
+//                            text = selectedAmPm,
+//                            style = MaterialTheme.typography.bodyMedium,
+//                            color = textPrimary
+//                        )
+//                    }
+//                    ExposedDropdownMenu(
+//                        expanded = amPmExpanded,
+//                        onDismissRequest = { amPmExpanded = false },
+//                        modifier = Modifier.background(surface)
+//                    ) {
+//                        amPm.forEach { option ->
+//                            DropdownMenuItem(
+//                                text = {
+//                                    Text(
+//                                        option,
+//                                        color = if (option == selectedAmPm) primary else textPrimary,
+//                                        style = MaterialTheme.typography.bodyMedium
+//                                    )
+//                                },
+//                                onClick = { selectedAmPm = option; amPmExpanded = false }
+//                            )
+//                        }
+//                    }
+//                }
             }
         }
 

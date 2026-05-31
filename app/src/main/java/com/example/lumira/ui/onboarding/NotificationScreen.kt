@@ -54,7 +54,7 @@ fun NotificationScreen(onContinue: (Int) -> Unit) {
     ) {
         Spacer(modifier = Modifier.height(48.dp))
 
-        ProgressDots(total = 5, current = 3, activeColor = primary, inactiveColor = border)
+        ProgressDots(total = 8, current = 5, activeColor = primary, inactiveColor = border)
 
         Spacer(modifier = Modifier.weight(1f))
 

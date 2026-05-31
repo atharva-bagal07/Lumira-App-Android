@@ -15,6 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.lumira.data.AstronomyEngine
 import kotlinx.coroutines.launch
 import com.example.lumira.data.GeminiRepository
 import com.example.lumira.model.ReadingSession
@@ -51,6 +52,9 @@ fun ReadingLoadingScreen(
     val selectedMood by readingViewModel.selectedMood.collectAsState()
     val question by readingViewModel.question.collectAsState()
 
+    var hasStarted by remember { mutableStateOf(false) }
+
+
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
     val scale by infiniteTransition.animateFloat(
         initialValue = 0.9f,
@@ -80,9 +84,19 @@ fun ReadingLoadingScreen(
     )
     var messageIndex by remember { mutableStateOf(0) }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(zodiac, selectedStyle, question) {
+        if (hasStarted) return@LaunchedEffect
+        if (zodiac.isEmpty() || selectedStyle.isEmpty() || question.isEmpty()) return@LaunchedEffect
+
+        hasStarted = true
+
+        android.util.Log.d(
+            "LumiraReading",
+            "generateReading called — zodiac: $zodiac, style: $selectedStyle"
+        )
+
         val repository = GeminiRepository()
-        val astrologyContext = lumiraViewModel.getAstrologyContext()
+        val astrologyContext = AstronomyEngine.getAstrologyContext()
         val personalDay = lumiraViewModel.getPersonalDayNumber()
 
         val messageJob = launch {
@@ -92,45 +106,48 @@ fun ReadingLoadingScreen(
             }
         }
 
-        val result = repository.generateReading(
-            name = name,
-            zodiacSign = zodiac,
-            chineseZodiac = chineseZodiac,
-            lifePathNumber = lifePathNumber,
-            personalDayNumber = personalDay,
-            lifePhase = lifePhase,
-            birthTime = birthTime,
-            readingStyle = selectedStyle,
-            areaOfLife = selectedArea,
-            mood = selectedMood,
-            question = question,
-            astrologyContext = astrologyContext
-        )
-
-        messageJob.cancel()
-
-        result.fold(
-            onSuccess = { reading ->
-                val session = ReadingSession(
-                    id = UUID.randomUUID().toString(),
-                    date = LocalDate.now().format(DateTimeFormatter.ISO_DATE),
-                    readingStyle = selectedStyle,
-                    areaOfLife = selectedArea,
-                    mood = selectedMood,
-                    question = question,
-                    response = reading,
-                    zodiacSign = zodiac,
-                    timestamp = System.currentTimeMillis()
-                )
-                readingViewModel.setReadingResult(reading)
-                lumiraViewModel.saveReadingSession(session)
-                onReadingReady()
-            },
-            onFailure = {
-                readingViewModel.setError(it.message ?: "Something went wrong.")
-                onError()
-            }
-        )
+        try {
+            android.util.Log.d("LumiraReading", "Calling Gemini API now...")
+            val result = repository.generateReading(
+                name = name,
+                zodiacSign = zodiac,
+                lifePhase = lifePhase,
+                readingStyle = selectedStyle,
+                areaOfLife = selectedArea,
+                mood = selectedMood,
+                question = question
+            )
+            messageJob.cancel()
+            result.fold(
+                onSuccess = { reading ->
+                    android.util.Log.d("LumiraReading", "Reading received successfully")
+                    val session = ReadingSession(
+                        id = UUID.randomUUID().toString(),
+                        date = LocalDate.now().format(DateTimeFormatter.ISO_DATE),
+                        readingStyle = selectedStyle,
+                        areaOfLife = selectedArea,
+                        mood = selectedMood,
+                        question = question,
+                        response = reading,
+                        zodiacSign = zodiac,
+                        timestamp = System.currentTimeMillis()
+                    )
+                    readingViewModel.setReadingResult(reading)
+                    lumiraViewModel.saveReadingSession(session)
+                    onReadingReady()
+                },
+                onFailure = { error ->
+                    android.util.Log.e("LumiraReading", "Reading failed: ${error.message}")
+                    readingViewModel.setError(error.message ?: "Something went wrong.")
+                    onError()
+                }
+            )
+        } catch (e: Exception) {
+            messageJob.cancel()
+            android.util.Log.e("LumiraReading", "Exception: ${e.message}")
+            readingViewModel.setError(e.message ?: "Something went wrong.")
+            onError()
+        }
     }
 
     Column(

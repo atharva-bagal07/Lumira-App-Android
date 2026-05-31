@@ -2,9 +2,13 @@ package com.example.lumira.navigation
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
@@ -26,6 +30,9 @@ import com.example.lumira.ui.reading.ReadingHistoryScreen
 import com.example.lumira.ui.reading.ReadingLoadingScreen
 import com.example.lumira.ui.reading.ReadingResultScreen
 import com.example.lumira.ui.reading.ReadingStyleScreen
+import com.example.lumira.ui.theme.DarkBackground
+import com.example.lumira.ui.theme.LightBackground
+import com.example.lumira.ui.theme.isNightTime
 import com.example.lumira.viewmodel.LumiraViewModel
 import com.example.lumira.viewmodel.ReadingViewModel
 
@@ -59,7 +66,16 @@ fun NavGraph() {
     val onboardingDone by lumiraViewModel.onboardingDone.collectAsState()
     val isReady by lumiraViewModel.isReady.collectAsState()
 
-    if (!isReady) return
+    if (!isReady) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    if (isNightTime()) DarkBackground else LightBackground
+                )
+        )
+        return
+    }
 
     NavHost(
         navController = navController,

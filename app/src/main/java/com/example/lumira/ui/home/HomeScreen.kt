@@ -2,9 +2,7 @@ package com.example.lumira.ui.home
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -24,13 +22,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.lumira.ui.theme.*
 import com.example.lumira.viewmodel.LumiraViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun HomeScreen(viewModel: LumiraViewModel, onStartReading: () -> Unit, onViewHistory: () -> Unit) {
+fun HomeScreen(
+    viewModel: LumiraViewModel,
+    onStartReading: () -> Unit,
+    onViewHistory: () -> Unit
+) {
     val isDark = isNightTime()
-
     val bg = if (isDark) DarkBackground else LightBackground
     val textPrimary = if (isDark) DarkTextPrimary else LightTextPrimary
     val textSecondary = if (isDark) DarkTextSecondary else LightTextSecondary
@@ -41,26 +43,22 @@ fun HomeScreen(viewModel: LumiraViewModel, onStartReading: () -> Unit, onViewHis
     val border = if (isDark) DarkBorder else LightBorder
     val surface = if (isDark) DarkSurface else LightSurface
 
-    var reflected by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     val zodiac by viewModel.userZodiac.collectAsState()
+    val name by viewModel.userName.collectAsState()
     val streak by viewModel.streak.collectAsState()
-
-    val context = LocalContext.current
-
-    LaunchedEffect(Unit) {
-        viewModel.checkAndUpdateStreak()
-    }
-
     val dailyGuidance by viewModel.dailyGuidance.collectAsState()
+    val readingsToday by viewModel.readingsToday.collectAsState()
+    val subscriptionTier by viewModel.subscriptionTier.collectAsState()
 
-    LaunchedEffect(zodiac) {
-        if (zodiac.isNotEmpty()) {
-            viewModel.fetchDailyGuidance(zodiac)
-        }
-    }
+    val maxReadings = if (subscriptionTier == "premium") 3 else 1
+    val canRead = readingsToday < maxReadings
 
+    var reflected by remember { mutableStateOf(false) }
     var animateTrigger by remember { mutableStateOf(false) }
+
     val streakScale by animateFloatAsState(
         targetValue = if (animateTrigger) 1.4f else 1f,
         animationSpec = spring(
@@ -71,18 +69,21 @@ fun HomeScreen(viewModel: LumiraViewModel, onStartReading: () -> Unit, onViewHis
         label = "streakScale"
     )
 
-    val scope = rememberCoroutineScope()
+    LaunchedEffect(zodiac) {
+        if (zodiac.isNotEmpty()) {
+            viewModel.checkAndUpdateStreak()
+            viewModel.fetchDailyGuidance(zodiac)
+        }
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(bg)
-            .padding(horizontal = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(horizontal = 24.dp)
     ) {
         Spacer(modifier = Modifier.height(52.dp))
 
-        // Top bar
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -90,21 +91,19 @@ fun HomeScreen(viewModel: LumiraViewModel, onStartReading: () -> Unit, onViewHis
         ) {
             Column {
                 Text(
-                    text = zodiac.ifEmpty { "—" },
+                    text = if (name.isNotEmpty()) "Hello, $name" else zodiac,
                     style = MaterialTheme.typography.titleMedium,
                     color = textPrimary,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp
+                    fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = java.time.LocalDate.now()
                         .format(java.time.format.DateTimeFormatter.ofPattern("EEEE, MMM d")),
-                    fontSize = 16.sp,
+                    fontSize = 13.sp,
                     color = textSecondary
                 )
             }
 
-            // Streak pill
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -124,106 +123,134 @@ fun HomeScreen(viewModel: LumiraViewModel, onStartReading: () -> Unit, onViewHis
             }
         }
 
-        Spacer(modifier = Modifier.weight(0.5f))
+        Spacer(modifier = Modifier.height(6.dp))
 
-        // Guidance card
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = zodiac,
+                style = MaterialTheme.typography.bodyMedium,
+                color = primary,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = "$readingsToday/$maxReadings readings today",
+                style = MaterialTheme.typography.bodyMedium,
+                color = textSecondary,
+                fontSize = 12.sp,
+                modifier = Modifier.clickable { onViewHistory() }
+            )
+        }
+
+        Spacer(modifier = Modifier.weight(1f))
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(20.dp))
                 .background(surface)
                 .border(0.5.dp, border, RoundedCornerShape(20.dp))
-                .padding(26.dp)
+                .padding(24.dp)
         ) {
             Text(
                 text = "TODAY'S GUIDANCE",
                 style = MaterialTheme.typography.labelSmall,
                 color = textSecondary,
-                letterSpacing = 1.sp,
-                fontSize = 14.sp
+                letterSpacing = 1.sp
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = dailyGuidance.guidance.ifEmpty { "Loading your guidance..." },
+                text = dailyGuidance.ifEmpty { "Loading your guidance..." },
                 style = MaterialTheme.typography.bodyLarge,
                 color = textPrimary,
-                lineHeight = 36.sp,
-                fontSize = 26.sp
+                lineHeight = 32.sp,
+                fontSize = 20.sp
             )
         }
 
-        Spacer(modifier = Modifier.weight(0.5f))
+        Spacer(modifier = Modifier.weight(1f))
 
-        // Reflect button or confirmed state
         if (!reflected) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
-                    .background(primaryDark)
+                    .background(surface)
+                    .border(0.5.dp, border, RoundedCornerShape(14.dp))
                     .clickable {
                         scope.launch {
                             viewModel.markReflected()
-                            kotlinx.coroutines.delay(300)
+                            delay(300)
                             reflected = true
                             animateTrigger = true
                             viewModel.cancelNotifications(context)
                         }
                     }
-                    .padding(vertical = 18.dp),
+                    .padding(vertical = 16.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "I've reflected on this",
+                    text = "I've read today's guidance",
                     style = MaterialTheme.typography.labelMedium,
-                    color = if (isDark) DarkTextPrimary else LightBackground
+                    color = textSecondary
                 )
             }
         } else {
-            Column(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
                     .background(accentFill)
-                    .border(1.dp, accentBorder, RoundedCornerShape(14.dp))
-                    .padding(28.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .border(0.5.dp, accentBorder, RoundedCornerShape(14.dp))
+                    .padding(vertical = 16.dp),
+                contentAlignment = Alignment.Center
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(text = "🔥", fontSize = 32.sp)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "$streak",
-                        fontSize = 52.sp,
-                        fontFamily = Almendra,
-                        fontWeight = FontWeight.Bold,
-                        color = primary
-                    )
-                }
-                Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "days aligned",
-                    style = MaterialTheme.typography.titleMedium,
+                    text = "🔥 $streak day streak — see you tomorrow",
+                    style = MaterialTheme.typography.labelMedium,
                     color = primary,
                     fontWeight = FontWeight.Bold
                 )
-                Spacer(modifier = Modifier.height(12.dp))
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(if (isDark) DarkBackground else LightBackground)
-                        .padding(12.dp)
-                ) {
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(14.dp))
+                .background(if (canRead) primaryDark else accentFill)
+                .border(
+                    0.5.dp,
+                    if (canRead) primaryDark else accentBorder,
+                    RoundedCornerShape(14.dp)
+                )
+                .clickable { if (canRead) onStartReading() }
+                .padding(vertical = 18.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = if (canRead) "Get your reading" else "No readings left today",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = if (canRead) {
+                        if (isDark) DarkTextPrimary else LightBackground
+                    } else primary,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp
+                )
+                if (!canRead && subscriptionTier != "premium") {
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Alignment maintained. See you tomorrow.",
+                        text = "Upgrade to Oracle for 3 readings per day",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = textSecondary,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
+                        color = primary,
+                        fontSize = 12.sp
                     )
                 }
             }

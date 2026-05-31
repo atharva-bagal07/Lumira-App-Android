@@ -45,6 +45,11 @@ class LumiraWidgetReceiver : AppWidgetProvider() {
             } catch (e: Exception) {
                 0
             }
+            val name = try {
+                prefs.userName.first()
+            } catch (e: Exception) {
+                ""
+            }
 
             val today = try {
                 java.time.LocalDate.now()
@@ -65,16 +70,14 @@ class LumiraWidgetReceiver : AppWidgetProvider() {
                 "Your guidance for today is ready."
             }
 
-            val zodiacDisplay = if (zodiac.isNotEmpty())
-                zodiac.replaceFirstChar { it.uppercase() }
-            else "Lumira"
+            val displayName =
+                if (name.isNotEmpty()) name else zodiac.replaceFirstChar { it.uppercase() }
 
             val views = RemoteViews(context.packageName, R.layout.lumira_widget_layout)
-            views.setTextViewText(R.id.widget_zodiac, zodiacDisplay)
+            views.setTextViewText(R.id.widget_name, displayName)
             views.setTextViewText(R.id.widget_streak, "🔥 $streak")
             views.setTextViewText(R.id.widget_teaser, teaser)
 
-            // Open app on tap
             val intent =
                 android.content.Intent(context, com.example.lumira.MainActivity::class.java)
             val pendingIntent = android.app.PendingIntent.getActivity(

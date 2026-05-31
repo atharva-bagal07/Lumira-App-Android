@@ -43,7 +43,7 @@ fun NameScreen(onContinue: (String) -> Unit) {
     ) {
         Spacer(modifier = Modifier.height(48.dp))
 
-        ProgressDots(total = 5, current = 1, activeColor = primary, inactiveColor = border)
+        ProgressDots(total = 8, current = 1, activeColor = primary, inactiveColor = border)
 
         Spacer(modifier = Modifier.weight(1f))
 

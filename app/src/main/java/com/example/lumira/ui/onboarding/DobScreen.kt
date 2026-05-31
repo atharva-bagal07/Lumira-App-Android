@@ -18,6 +18,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.lumira.data.AstronomyEngine
 import com.example.lumira.ui.theme.*
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
